@@ -1,10 +1,14 @@
 package view
 
 import (
+	"fmt"
 	"gather-your-party/internal/middleware"
+	"gather-your-party/internal/steam"
 	"gather-your-party/internal/template"
 	"net/http"
+	"os"
 	"path/filepath"
+	"time"
 )
 
 func ServeFavicon(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +27,72 @@ func Home(ctx *middleware.CustomContext, w http.ResponseWriter, r *http.Request)
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
-
 	}
-	template.Home("Templ Quickstart").Render(ctx, w)
+
+	SteamService := steam.NewService(os.Getenv("STEAM_API_KEY"))
+	fmt.Println("Created the service!")
+	steamIDValue := ctx.Context.Value("steamID")
+	if steamIDValue == nil {
+		template.Home(steam.Player{}, "Gather Your Party", template.Signin).Render(ctx, w)
+		return
+	}
+
+	playerIdList := []string{steamIDValue.(string)}
+	players, err := SteamService.Players(playerIdList)
+	if err != nil {
+		http.NotFound(w, r)
+	}
+	template.Home(players[0], "Gather Your Party", template.Main).Render(ctx, w)
+}
+
+func GamesList(ctx *middleware.CustomContext, w http.ResponseWriter, r *http.Request) {
+	SteamService := steam.NewService(os.Getenv("STEAM_API_KEY"))
+	steamIDValue := ctx.Context.Value("steamID")
+	if steamIDValue == nil {
+		template.Home(steam.Player{}, "Gather Your Party", template.Signin).Render(ctx, w)
+		return
+	}
+	playerId := steamIDValue.(string)
+	games, err := SteamService.Games(playerId)
+	if err != nil {
+		http.NotFound(w, r)
+	}
+	template.GameList(games).Render(ctx, w)
+}
+
+func FriendsList(ctx *middleware.CustomContext, w http.ResponseWriter, r *http.Request) {
+	SteamService := steam.NewService(os.Getenv("STEAM_API_KEY"))
+	steamIDValue := ctx.Context.Value("steamID")
+	if steamIDValue == nil {
+		template.Home(steam.Player{}, "Gather Your Party", template.Signin).Render(ctx, w)
+		return
+	}
+
+	playerId := steamIDValue.(string)
+	fmt.Printf("got player id: %s", playerId)
+	friends, err := SteamService.Friends(playerId)
+	if err != nil {
+		http.NotFound(w, r)
+	}
+
+	template.FriendsList(friends).Render(ctx, w)
+}
+
+func Login(ctx *middleware.CustomContext, w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/login" {
+		http.NotFound(w, r)
+		return
+	}
+	template.Login().Render(ctx, w)
+}
+
+func PostLoginRedirect(ctx *middleware.CustomContext, w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:    "steam_id",
+		Value:   r.PostFormValue("steamID"),
+		Expires: time.Now().Add(120 * time.Second),
+	})
+	w.Header().Set("HX-redirect", "/")
+
+	http.RedirectHandler("/", http.StatusSeeOther)
 }

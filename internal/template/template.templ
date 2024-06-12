@@ -1,29 +1,73 @@
 package template
 
-import "snake-scape/internal/component"
+import "gather-your-party/internal/component"
+import "gather-your-party/internal/steam"
+import "fmt"
 
+type PageState int
 
-templ Base(title string) {
-    <html>
-        <head>
-            <meta charset="UTF-8"></meta>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
-            <script src="https://unpkg.com/htmx.org@1.9.11"></script>
-            <link rel="stylesheet" href="/static/css/output.css"></link>
-            <title>{title}</title>
-        </head>
-            @component.Banner()
-        <body>
-            <main class='p-6 grid gap-4'>
-                { children... }
-            </main>
-        </body>
-    </html>
+const (
+	Signin PageState = iota
+	Main
+)
+
+func getGameUrl(appID int, imageID string) string {
+	return fmt.Sprintf("http://media.steampowered.com/steamcommunity/public/images/apps/%d/%s.jpg", appID, imageID)
 }
 
-templ Home(title string) {
-    @Base(title) {
-        @component.TextAndTitle("I'm a Component!", "I am included as a content item in the Base Template!")
-		@component.TextAndTitle("I'm another Component!", "I am also included in the Base Template!")
-    }
+templ Base(title string) {
+	<html data-theme="dim">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<script src="/static/script/htmx.min.js"></script>
+			<link rel="stylesheet" href="/static/css/output.css"/>
+			<title>{ title }</title>
+		</head>
+		<body>
+			<main class="p-6 grid gap-4">
+				{ children... }
+			</main>
+		</body>
+	</html>
+}
+
+templ Home(player steam.Player, title string, pageName PageState) {
+	@Base(title) {
+		@component.Navbar(player, "")
+		if pageName == Signin {
+			@component.Signin()
+		} else if pageName == Main {
+			@component.Main()
+		} else {
+			@component.TextAndTitle("thank you", "welcome to the site")
+		}
+	}
+}
+
+templ GameList(games []steam.Game) {
+	<ul>
+		for _, item := range games {
+			<li><img src={ getGameUrl(item.AppID, item.ImgIconURL) }/>{ item.Name }</li>
+		}
+	</ul>
+}
+
+templ FriendsList(friends []steam.Player) {
+	<ul>
+		for _, item := range friends {
+			<li><img src={ item.AvatarSmall }/>{ item.PersonaName }</li>
+		}
+	</ul>
+}
+
+templ Landing(isLoggedIn bool) {
+	@Base("Gather Your Party - Welcome!") {
+	}
+}
+
+templ Login() {
+	@Base("Gather Your Party - Login") {
+		@component.Navbar(steam.Player{}, "")
+	}
 }
