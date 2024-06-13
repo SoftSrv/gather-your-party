@@ -11,8 +11,9 @@ import "io"
 import "bytes"
 
 import "gather-your-party/internal/component"
-import "gather-your-party/internal/steam"
+
 import "fmt"
+import "github.com/softsrv/steamapi/steamapi"
 
 type PageState int
 
@@ -45,7 +46,7 @@ func Base(title string) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/template/template.templ`, Line: 25, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/template/template.templ`, Line: 26, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -70,7 +71,7 @@ func Base(title string) templ.Component {
 	})
 }
 
-func Home(player steam.Player, title string, pageName PageState) templ.Component {
+func Home(player steamapi.Player, title string, pageName PageState) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -129,7 +130,7 @@ func Home(player steam.Player, title string, pageName PageState) templ.Component
 	})
 }
 
-func GameList(games []steam.Game) templ.Component {
+func GameList(games []steamapi.Game) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -154,7 +155,7 @@ func GameList(games []steam.Game) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(getGameUrl(item.AppID, item.ImgIconURL))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/template/template.templ`, Line: 51, Col: 57}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/template/template.templ`, Line: 52, Col: 57}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -167,7 +168,7 @@ func GameList(games []steam.Game) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(item.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/template/template.templ`, Line: 51, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/template/template.templ`, Line: 52, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -189,7 +190,7 @@ func GameList(games []steam.Game) templ.Component {
 	})
 }
 
-func FriendsList(friends []steam.Player) templ.Component {
+func FriendsList(friends []steamapi.Player) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -214,7 +215,7 @@ func FriendsList(friends []steam.Player) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(item.AvatarSmall)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/template/template.templ`, Line: 59, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/template/template.templ`, Line: 60, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -227,7 +228,7 @@ func FriendsList(friends []steam.Player) templ.Component {
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(item.PersonaName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/template/template.templ`, Line: 59, Col: 56}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/template/template.templ`, Line: 60, Col: 56}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -303,7 +304,7 @@ func Login() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			templ_7745c5c3_Err = component.Navbar(steam.Player{}, "").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = component.Navbar(steamapi.Player{}, "").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -1,14 +1,16 @@
 package view
 
 import (
+	"context"
 	"fmt"
 	"gather-your-party/internal/middleware"
-	"gather-your-party/internal/steam"
 	"gather-your-party/internal/template"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/softsrv/steamapi/steamapi"
 )
 
 func ServeFavicon(w http.ResponseWriter, r *http.Request) {
@@ -29,16 +31,19 @@ func Home(ctx *middleware.CustomContext, w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	SteamService := steam.NewService(os.Getenv("STEAM_API_KEY"))
+	SteamService := steamapi.NewClient(os.Getenv("STEAM_API_KEY"))
 	fmt.Println("Created the service!")
 	steamIDValue := ctx.Context.Value("steamID")
 	if steamIDValue == nil {
-		template.Home(steam.Player{}, "Gather Your Party", template.Signin).Render(ctx, w)
+		template.Home(steamapi.Player{}, "Gather Your Party", template.Signin).Render(ctx, w)
 		return
 	}
 
 	playerIdList := []string{steamIDValue.(string)}
-	players, err := SteamService.Players(playerIdList)
+	deadline := time.Now().Add(5000 * time.Millisecond)
+	newCtx, cancelCtx := context.WithDeadline(ctx.Context, deadline)
+	defer cancelCtx()
+	players, err := SteamService.Players(newCtx, playerIdList)
 	if err != nil {
 		http.NotFound(w, r)
 	}
@@ -46,14 +51,17 @@ func Home(ctx *middleware.CustomContext, w http.ResponseWriter, r *http.Request)
 }
 
 func GamesList(ctx *middleware.CustomContext, w http.ResponseWriter, r *http.Request) {
-	SteamService := steam.NewService(os.Getenv("STEAM_API_KEY"))
+	SteamService := steamapi.NewClient(os.Getenv("STEAM_API_KEY"))
 	steamIDValue := ctx.Context.Value("steamID")
 	if steamIDValue == nil {
-		template.Home(steam.Player{}, "Gather Your Party", template.Signin).Render(ctx, w)
+		template.Home(steamapi.Player{}, "Gather Your Party", template.Signin).Render(ctx, w)
 		return
 	}
 	playerId := steamIDValue.(string)
-	games, err := SteamService.Games(playerId)
+	deadline := time.Now().Add(5000 * time.Millisecond)
+	newCtx, cancelCtx := context.WithDeadline(ctx.Context, deadline)
+	defer cancelCtx()
+	games, err := SteamService.Games(newCtx, playerId)
 	if err != nil {
 		http.NotFound(w, r)
 	}
@@ -61,16 +69,19 @@ func GamesList(ctx *middleware.CustomContext, w http.ResponseWriter, r *http.Req
 }
 
 func FriendsList(ctx *middleware.CustomContext, w http.ResponseWriter, r *http.Request) {
-	SteamService := steam.NewService(os.Getenv("STEAM_API_KEY"))
+	SteamService := steamapi.NewClient(os.Getenv("STEAM_API_KEY"))
 	steamIDValue := ctx.Context.Value("steamID")
 	if steamIDValue == nil {
-		template.Home(steam.Player{}, "Gather Your Party", template.Signin).Render(ctx, w)
+		template.Home(steamapi.Player{}, "Gather Your Party", template.Signin).Render(ctx, w)
 		return
 	}
 
 	playerId := steamIDValue.(string)
-	fmt.Printf("got player id: %s", playerId)
-	friends, err := SteamService.Friends(playerId)
+
+	deadline := time.Now().Add(5000 * time.Millisecond)
+	newCtx, cancelCtx := context.WithDeadline(ctx.Context, deadline)
+	defer cancelCtx()
+	friends, err := SteamService.Friends(newCtx, playerId)
 	if err != nil {
 		http.NotFound(w, r)
 	}

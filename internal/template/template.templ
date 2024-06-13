@@ -1,8 +1,9 @@
 package template
 
 import "gather-your-party/internal/component"
-import "gather-your-party/internal/steam"
+
 import "fmt"
+import "github.com/softsrv/steamapi/steamapi"
 
 type PageState int
 
@@ -32,7 +33,7 @@ templ Base(title string) {
 	</html>
 }
 
-templ Home(player steam.Player, title string, pageName PageState) {
+templ Home(player steamapi.Player, title string, pageName PageState) {
 	@Base(title) {
 		@component.Navbar(player, "")
 		if pageName == Signin {
@@ -45,7 +46,7 @@ templ Home(player steam.Player, title string, pageName PageState) {
 	}
 }
 
-templ GameList(games []steam.Game) {
+templ GameList(games []steamapi.Game) {
 	<ul>
 		for _, item := range games {
 			<li><img src={ getGameUrl(item.AppID, item.ImgIconURL) }/>{ item.Name }</li>
@@ -53,7 +54,7 @@ templ GameList(games []steam.Game) {
 	</ul>
 }
 
-templ FriendsList(friends []steam.Player) {
+templ FriendsList(friends []steamapi.Player) {
 	<ul>
 		for _, item := range friends {
 			<li><img src={ item.AvatarSmall }/>{ item.PersonaName }</li>
@@ -68,6 +69,6 @@ templ Landing(isLoggedIn bool) {
 
 templ Login() {
 	@Base("Gather Your Party - Login") {
-		@component.Navbar(steam.Player{}, "")
+		@component.Navbar(steamapi.Player{}, "")
 	}
 }
